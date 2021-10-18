@@ -6,7 +6,9 @@ module.exports = (context, styledComponents, rule, name) => ({
   JSXOpeningElement(node) {
     const func = inspectee => name.includes('scope') && context.report(node, inspect(inspectee || node));
     try {
-      const originalName = node.name.name;
+      const originalName = node.name.type === 'JSXMemberExpression'
+        ? `${node.name.object.name}.${node.name.property.name}`
+        : node.name.name;
       const styledComponent = styledComponents[originalName];
       if (styledComponent) {
         const { tag, attrs } = styledComponent;
@@ -14,13 +16,12 @@ module.exports = (context, styledComponents, rule, name) => ({
         try {
           const allAttrs = mergeStyledAttrsWithNodeAttrs(attrs, originalNodeAttr);
           const asProp = getAsProp(allAttrs);
-          node.attributes = allAttrs;
-          node.name.name = asProp || tag;
-          rule.create(context).JSXOpeningElement(node);
-        } finally {
-          node.name.name = originalName;
-          node.attributes = originalNodeAttr;
-        }
+          rule.create(context).JSXOpeningElement({
+            ...node,
+            attributes: allAttrs,
+            name: { ...node.name, name: asProp || tag },
+          });
+        } catch {}
       }
     } catch {}
   },

@@ -21,8 +21,15 @@ const { __UNKNOWN_IDENTIFER__ } = require('./constants');
 
 module.exports = (styledComponentsDict, context, name) => ({
   TaggedTemplateExpression(node) {
-    const scName = node.parent.id && node.parent.id.name;
-    if (!scName) return;
+    let scName = node.parent.id && node.parent.id.name;
+    if (!scName) {
+      scName = node.parent.type === 'AssignmentExpression' && node.parent.left && node.parent.left.object && node.parent.left.property
+        ? `${node.parent.left.object.name}.${node.parent.left.property.name}`
+        : '';
+      if (!scName) {
+        return;
+      }
+    }
     let attrs = [];
     let tag = '';
     const func = (inspectee) => name.includes('anchor-is-valid') && context.report(node, inspect(inspectee || node));

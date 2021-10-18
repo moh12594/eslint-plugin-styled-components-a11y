@@ -59,8 +59,17 @@ const withStyledComponentsAsOtherWithComponentDefinedAfterInstantiation = ({ tag
   const NESTED = styled(STYLED)\`\`;
 `;
 
+const withBEM = ({ tag, props, children, siblings }) =>
+  `
+  const BLOCK = {};
+  BLOCK.ELEMENT = styled.${tag}\`\`;
+  const Func = () => ${
+    children ? `<>${siblings}<BLOCK.ELEMENT ${props}>${children}</BLOCK.ELEMENT></>` : `<>${siblings}<BLOCK.ELEMENT ${props} /></>`
+  };
+`;
+
 const makeStyledTestCases = (args) =>
-  [regular, withStyledAttrs, withStyledComponent, withStyledComponentImmediatelyChained, withStyledComponentAsOther, withStyledComponentsAsOtherWithComponentDefinedAfterInstantiation]
+  [regular, withStyledAttrs, withStyledComponent, withStyledComponentImmediatelyChained, withStyledComponentAsOther, withStyledComponentsAsOtherWithComponentDefinedAfterInstantiation, withBEM]
     .map(makeRuleMaker)
     .map((x) => x(args));
 
